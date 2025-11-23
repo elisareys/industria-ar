@@ -1,81 +1,98 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
   <head>
+    <meta charset="UTF-8" />
+    <title>AR – Esteira Industrial</title>
+
+    <!-- AFRAME -->
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.5/aframe/build/aframe-ar.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gesture-controls@1.3.0/dist/gesture-controls.min.js"></script>
+
+    <!-- ARJS -->
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+    <!-- Gesture Handler (para mover/rotacionar/zoom) -->
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/src/components/gesture-detector.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/src/components/gesture-handler.js"></script>
 
     <style>
-      body { margin: 0; overflow: hidden; }
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
     </style>
   </head>
 
   <body>
     <a-scene
-      vr-mode-ui="enabled: false"
       embedded
-      gesture-detector
-      device-orientation-permission-ui="enabled: true"
-      arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;"
+      vr-mode-ui="enabled: false"
+      arjs="sourceType: webcam; debugUIEnabled: false;"
+      renderer="antialias: true; alpha: true"
     >
-
+      <!-- MARCADOR HIRO -->
       <a-marker preset="hiro">
+        
+        <!-- MODELO E PAINEL -->
+        <a-entity id="modelContainer" gesture-handler>
+          
+          <!-- MODELO 3D DA ESTEIRA -->
+          <a-gltf-model 
+            id="esteira"
+            src="esteira.glb"
+            position="0 0 0"
+            rotation="-90 0 0"
+            scale="1.2 1.2 1.2">
+          </a-gltf-model>
 
-        <!-- MODELO -->
-        <a-entity id="modelo"
-          gltf-model="./esteira.glb"
-          gesture-controls="minScale: 0.4; maxScale: 3;"
-          scale="2.2 2.2 2.2"
-          position="0 0 0"
-          rotation="0 0 0"
-          animation-mixer>
-        </a-entity>
+          <!-- PAINEL (embaixo do modelo) -->
+          <a-plane 
+            id="painel"
+            position="0 -0.6 0"
+            rotation="-90 0 0"
+            width="0.6"
+            height="0.25"
+            color="#222">
+          </a-plane>
 
-        <!-- PAINEL -->
-        <a-entity id="painel"
-          geometry="primitive: plane; width: 1.3; height: 0.45"
-          material="color: black; opacity: 0.8"
-          rotation="-90 0 0"
-          position="0 -1.2 0">
+          <!-- LUZ -->
+          <a-circle 
+            id="statusLight"
+            position="-0.15 -0.6 0.01"
+            radius="0.05"
+            color="red">
+          </a-circle>
 
-          <a-text id="painelTexto"
-            value="Estado: NORMAL"
-            color="green"
+          <!-- TEXTO -->
+          <a-text 
+            value="Aquecida"
+            id="statusText"
             align="center"
-            width="2"
-            position="0 0 0.02">
+            position="0 -0.52 0.01"
+            scale="0.4 0.4 0.4"
+            color="#FFFFFF">
           </a-text>
-
         </a-entity>
-
-        <!-- BOTÃO INVISÍVEL -->
-        <a-box id="botao"
-          position="0 0.6 0"
-          depth="0.5" height="0.5" width="0.5"
-          opacity="0"
-          visible="true">
-        </a-box>
-
       </a-marker>
 
       <a-entity camera></a-entity>
-
     </a-scene>
 
     <script>
-      let quente = false;
+      const esteira = document.querySelector('#modelContainer');
+      const light = document.querySelector('#statusLight');
+      const text = document.querySelector('#statusText');
 
-      document.querySelector('#botao').addEventListener('click', () => {
+      let quente = true;
+
+      // Clique para alternar estado
+      window.addEventListener('click', () => {
         quente = !quente;
-
-        const texto = document.querySelector('#painelTexto');
-
         if (quente) {
-          texto.setAttribute('value', 'Estado: QUENTE');
-          texto.setAttribute('color', 'red');
+          light.setAttribute('color', 'red');
+          text.setAttribute('value', 'Aquecida');
         } else {
-          texto.setAttribute('value', 'Estado: NORMAL');
-          texto.setAttribute('color', 'green');
+          light.setAttribute('color', 'green');
+          text.setAttribute('value', 'Normal');
         }
       });
     </script>
