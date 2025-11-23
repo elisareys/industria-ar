@@ -7,10 +7,10 @@
     <!-- AFRAME -->
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
 
-    <!-- ARJS (versão estável — funciona no GitHub Pages) -->
+    <!-- ARJS estável -->
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
-    <!-- Gesture Handler oficial do AR.js -->
+    <!-- Gesture Handler -->
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/src/components/gesture-detector.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/src/components/gesture-handler.js"></script>
 
@@ -25,56 +25,55 @@
       vr-mode-ui="enabled: false"
       renderer="antialias: true; alpha: true"
       arjs="sourceType: webcam; debugUIEnabled: false;"
+      gesture-detector
     >
 
-      <!-- marcador hiro -->
-      <a-marker preset="hiro">
+      <!-- MARCADOR HIRO -->
+      <a-marker id="hiroMarker" preset="hiro"></a-marker>
 
-        <!-- container com gestos -->
-        <a-entity id="modelContainer" gesture-handler>
+      <!-- MODELO FORA DO MARCADOR (AGORA PODE MOVER) -->
+      <a-entity id="modelContainer" gesture-handler>
 
-          <!-- modelo 3D -->
-          <a-gltf-model 
-            id="esteira"
-            src="esteira.glb"
-            position="0 0 0"
-            rotation="-90 0 0"
-            scale="3.4 3.4 3.4"
-            animation-mixer
-          ></a-gltf-model>
+        <!-- Esteira -->
+        <a-gltf-model 
+          id="esteira"
+          src="esteira.glb"
+          position="0 0 0"
+          rotation="-90 0 0"
+          scale="3.4 3.4 3.4"
+          animation-mixer
+        ></a-gltf-model>
 
-          <!-- painel preto -->
-          <a-plane 
-            id="painel"
-            position="0 -0.7 0"
-            rotation="-90 0 0"
-            width="0.7"
-            height="0.30"
-            color="#111"
-            opacity="0.85"
-          ></a-plane>
+        <!-- Painel -->
+        <a-plane 
+          id="painel"
+          position="0 -0.7 0"
+          rotation="-90 0 0"
+          width="0.7"
+          height="0.30"
+          color="#111"
+          opacity="0.85"
+        ></a-plane>
 
-          <!-- luz de status -->
-          <a-circle 
-            id="statusLight"
-            position="-0.22 -0.7 0.01"
-            radius="0.06"
-            color="red"
-          ></a-circle>
+        <!-- Luz -->
+        <a-circle 
+          id="statusLight"
+          position="-0.22 -0.7 0.01"
+          radius="0.06"
+          color="red"
+        ></a-circle>
 
-          <!-- texto -->
-          <a-text 
-            id="statusText"
-            value="Aquecida"
-            align="center"
-            position="0 -0.63 0.01"
-            scale="0.4 0.4 0.4"
-            color="white"
-          ></a-text>
+        <!-- Texto -->
+        <a-text 
+          id="statusText"
+          value="Aquecida"
+          align="center"
+          position="0 -0.63 0.01"
+          scale="0.4 0.4 0.4"
+          color="white"
+        ></a-text>
 
-        </a-entity>
-
-      </a-marker>
+      </a-entity>
 
       <a-entity camera></a-entity>
     </a-scene>
@@ -85,8 +84,10 @@
 
       const luz = document.querySelector("#statusLight");
       const texto = document.querySelector("#statusText");
+      const marker = document.querySelector("#hiroMarker");
+      const container = document.querySelector("#modelContainer");
 
-      // Clique para alternar estado
+      // Alternar estado no clique
       window.addEventListener("click", () => {
         quente = !quente;
 
@@ -98,6 +99,27 @@
           texto.setAttribute("value", "Normal");
         }
       });
+
+      // quando o marcador é detectado → faz o modelo seguir ele
+      marker.addEventListener("markerFound", () => {
+        container.object3D.visible = true;
+      });
+
+      marker.addEventListener("markerLost", () => {
+        container.object3D.visible = false;
+      });
+
+      // Update a cada frame: modelo segue o marcador
+      AFRAME.registerComponent("follow-marker", {
+        tick: function () {
+          if (marker.object3D.visible) {
+            container.object3D.position.copy(marker.object3D.position);
+            container.object3D.rotation.copy(marker.object3D.rotation);
+          }
+        }
+      });
+
+      document.querySelector("a-scene").setAttribute("follow-marker", "");
     </script>
 
   </body>
